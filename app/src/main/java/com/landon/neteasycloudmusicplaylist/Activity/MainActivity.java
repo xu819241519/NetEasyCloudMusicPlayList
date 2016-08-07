@@ -7,6 +7,16 @@ import com.landon.neteasycloudmusicplaylist.R;
 
 /**
  * 主页面
+ *
+ *
+ *
+ * bugly
+ leakcanary
+ glide
+ dagger
+ autolayout
+ swiperefresh
+
  */
 public class MainActivity extends AppCompatActivity {
 
