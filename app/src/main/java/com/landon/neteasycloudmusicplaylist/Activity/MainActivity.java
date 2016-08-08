@@ -9,13 +9,9 @@ import com.landon.neteasycloudmusicplaylist.R;
  * 主页面
  *
  *
- *
- * bugly
- leakcanary
- glide
- dagger
- autolayout
- swiperefresh
+ //glide、volley集成
+ //dagger
+ swiperefresh、recyclerview support包中
 
  */
 public class MainActivity extends AppCompatActivity {
