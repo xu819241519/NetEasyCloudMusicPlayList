@@ -24,4 +24,7 @@ public class Constant {
             return  baseURL + "?order=hot&cat=%E5%85%A8%E9%83%A8&limit=35&offset=" + (35 * page);
         }
     }
+
+    //异步查询
+    public static int ASYNC_QUERY = 0;
 }
