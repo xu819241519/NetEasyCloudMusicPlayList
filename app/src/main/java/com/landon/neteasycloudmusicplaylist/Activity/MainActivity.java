@@ -25,7 +25,7 @@ import butterknife.ButterKnife;
  //dagger
  swiperefresh、recyclerview support包中
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
     //下拉刷新控件
     @BindView(R.id.sr_layout)
     SwipeRefreshLayout swipeRefreshLayout;

@@ -13,7 +13,7 @@ import java.lang.ref.WeakReference;
 /**
  * 引导页
  */
-public class SplashActivity extends AppCompatActivity {
+public class SplashActivity extends BaseActivity {
 
     private MyHandler handler;
 
