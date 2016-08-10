@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">网页云音乐歌单</string>
+    <string name="no_data">没有数据</string>
 </resources>
