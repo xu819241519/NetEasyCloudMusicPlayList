@@ -1,5 +1,6 @@
 package com.landon.neteasycloudmusicplaylist.parser;
 
+import com.landon.neteasycloudmusicplaylist.Utils.LogUtils;
 import com.landon.neteasycloudmusicplaylist.bean.PlayListBean;
 
 import org.jsoup.Jsoup;
@@ -46,15 +47,35 @@ public class HTMLParser {
         List<PlayListBean> playList = new ArrayList<>();
         if (html != null) {
             Document document = Jsoup.parse(html);
-            Elements elements = document.select(".dec");
-            if (elements != null && elements.size() > 0) {
-                for (int i = 0; i < elements.size(); ++i) {
+
+            Elements covers = document.select(".u-cover-1");
+            Elements decs = document.select(".dec");
+            Elements authors = document.select(".s-fc3");
+            if(decs.size() == covers.size() && authors.size() >= decs.size()) {
+                int size = decs.size();
+                for(int i = 0; i < decs.size(); ++i){
                     PlayListBean playListBean = new PlayListBean();
-                    playListBean.setId(id++);
-                    playListBean.setUrl(elements.get(i).attr("href"));
-                    playListBean.setName(elements.get(i).text());
+                    //设置URL和id
+                    String url = decs.get(i).attr("href");
+                    if(url != null){
+                        int index = url.lastIndexOf('=');
+                        if(index > 0){
+                            String sID = url.substring(index + 1);
+                            playListBean.setId(Long.parseLong(sID));
+                        }
+                        playListBean.setUrl("http://music.163.com" + url);
+                    }
+                    //设置歌单名
+                    playListBean.setName(decs.get(i).text());
+                    //设置封面图片
+                    playListBean.setImage(covers.get(i).children().first().attr("src"));
+                    //设置作者
+                    playListBean.setAuthor(authors.get(i).attr("title"));
+
                     playList.add(playListBean);
                 }
+            }else{
+                LogUtils.e("landon","爬取列表数目不对应");
             }
         }
         return playList;

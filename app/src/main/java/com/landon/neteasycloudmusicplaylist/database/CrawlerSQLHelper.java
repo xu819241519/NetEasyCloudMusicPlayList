@@ -49,15 +49,23 @@ public class CrawlerSQLHelper extends SQLiteOpenHelper {
      */
     public boolean insert(PlayListBean bean) {
         SQLiteDatabase db = getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put("name", bean.getName());
-        cv.put("id", bean.getId());
-        cv.put("author", bean.getAuthor());
-        cv.put("image", bean.getImage());
-        cv.put("url", bean.getUrl());
-        boolean result = db.insert(databaseName, null, cv) != -1;
+        Cursor cur = db.query(databaseName,null,"id = ?",new String[]{String.format(Locale.CHINA,"%d",bean.getId())},null,null,null);
+        if(cur != null && cur.getCount() > 0){
+            cur.close();
+            return update(bean);
+        }else {
+            if(cur != null)
+                cur.close();
+            ContentValues cv = new ContentValues();
+            cv.put("name", bean.getName());
+            cv.put("id", bean.getId());
+            cv.put("author", bean.getAuthor());
+            cv.put("image", bean.getImage());
+            cv.put("url", bean.getUrl());
+            boolean result = db.insert(databaseName, null, cv) != -1;
 //        db.close();
-        return result;
+            return result;
+        }
     }
 
     /**

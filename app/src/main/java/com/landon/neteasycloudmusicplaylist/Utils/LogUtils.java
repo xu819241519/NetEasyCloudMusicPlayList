@@ -14,4 +14,10 @@ public class LogUtils {
             Log.d(tag,msg);
         }
     }
+
+    public static void e(String tag, String msg){
+        if(enableLog){
+            Log.e(tag,msg);
+        }
+    }
 }
