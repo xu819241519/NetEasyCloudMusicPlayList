@@ -14,11 +14,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <GridView
-            android:id="@+id/gv_playlist"
-            android:numColumns="2"
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rv_playlist"
+            android:padding="10dp"
             android:layout_width="match_parent"
-            android:layout_height="80dp"/>
+            android:layout_height="match_parent" />
     </android.support.v4.widget.SwipeRefreshLayout>
 
 </RelativeLayout>

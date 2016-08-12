@@ -4,4 +4,5 @@
     <color name="colorPrimaryDark">#FFF00101</color>
     <color name="colorAccent">#FF4081</color>
     <color name="red">#FFFF0000</color>
+    <color name="trans">#ffffffff</color>
 </resources>

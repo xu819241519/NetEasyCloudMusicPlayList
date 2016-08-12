@@ -56,7 +56,7 @@ public class HTMLParser {
                 for(int i = 0; i < decs.size(); ++i){
                     PlayListBean playListBean = new PlayListBean();
                     //设置URL和id
-                    String url = decs.get(i).attr("href");
+                    String url = decs.get(i).children().first().attr("href");
                     if(url != null){
                         int index = url.lastIndexOf('=');
                         if(index > 0){

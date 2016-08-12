@@ -1,6 +1,7 @@
 package com.landon.neteasycloudmusicplaylist.adapter;
 
 import android.content.Context;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +19,7 @@ import java.util.List;
 /**
  * Created by landon.xu on 2016/8/9.
  */
-public class PlayListAdapter extends BaseAdapter {
+public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHolder> {
 
     private Context context;
 
@@ -28,16 +29,38 @@ public class PlayListAdapter extends BaseAdapter {
 
     private List<PlayListBean> playListBeanList = new ArrayList<>();
 
+
     @Override
-    public int getCount() {
-        if (playListBeanList == null || playListBeanList.size() == 0)
-            return 1;
-        else return playListBeanList.size();
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(context).inflate(R.layout.item_playlist, null);
+        return new ViewHolder(view);
+//        if (convertView == null) {
+//            if (playListBeanList == null || playListBeanList.size() == 0) {
+//                convertView =
+//            } else {
+//                convertView = LayoutInflater.from(context).inflate(R.layout.item_playlist, null);
+//                viewHolder = new ViewHolder();
+//                viewHolder.ivImage = (ImageView) convertView.findViewById(R.id.iv_image);
+//                viewHolder.tvName = (TextView) convertView.findViewById(R.id.tv_name);
+//                convertView.setTag(viewHolder);
+//            }
+//        } else {
+//            viewHolder = (ViewHolder) convertView.getTag();
+//        }
+//
+//        if (playListBeanList != null && playListBeanList.size() > 0) {
+//
+////            Glide.with(context).load(playListBeanList.get(position).getImage()).into(viewHolder.ivImage);
+//            if(playListBeanList.get(position).getName() != null && viewHolder != null && viewHolder.tvName != null)
+//                viewHolder.tvName.setText(playListBeanList.get(position).getName());
+//        }
+//        return null;
     }
 
     @Override
-    public Object getItem(int position) {
-        return playListBeanList.get(position);
+    public void onBindViewHolder(ViewHolder holder, int position) {
+        holder.tvName.setText(playListBeanList.get(position).getName());
+        Glide.with(context).load(playListBeanList.get(position).getImage()).into(holder.ivImage);
     }
 
     @Override
@@ -46,29 +69,8 @@ public class PlayListAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolder viewHolder = null;
-        if (convertView == null) {
-            if (playListBeanList == null || playListBeanList.size() == 0) {
-                convertView = LayoutInflater.from(context).inflate(R.layout.item_no_playlist, null);
-            } else {
-                convertView = LayoutInflater.from(context).inflate(R.layout.item_playlist, null);
-                viewHolder = new ViewHolder();
-                viewHolder.ivImage = (ImageView) convertView.findViewById(R.id.iv_image);
-                viewHolder.tvName = (TextView) convertView.findViewById(R.id.tv_name);
-                convertView.setTag(viewHolder);
-            }
-        } else {
-            viewHolder = (ViewHolder) convertView.getTag();
-        }
-
-        if (playListBeanList != null && playListBeanList.size() > 0) {
-
-//            Glide.with(context).load(playListBeanList.get(position).getImage()).into(viewHolder.ivImage);
-            if(playListBeanList.get(position).getName() != null && viewHolder != null && viewHolder.tvName != null)
-                viewHolder.tvName.setText(playListBeanList.get(position).getName());
-        }
-        return convertView;
+    public int getItemCount() {
+        return playListBeanList.size() == 0 ? 0 : playListBeanList.size();
     }
 
     /**
@@ -81,8 +83,14 @@ public class PlayListAdapter extends BaseAdapter {
         notifyDataSetChanged();
     }
 
-    public static class ViewHolder {
+    class ViewHolder extends RecyclerView.ViewHolder {
         public ImageView ivImage;
         public TextView tvName;
+
+        public ViewHolder(View itemView) {
+            super(itemView);
+            ivImage = (ImageView) itemView.findViewById(R.id.iv_image);
+            tvName = (TextView) itemView.findViewById(R.id.tv_name);
+        }
     }
 }
