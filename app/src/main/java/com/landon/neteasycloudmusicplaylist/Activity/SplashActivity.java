@@ -1,5 +1,6 @@
 package com.landon.neteasycloudmusicplaylist.activity;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
@@ -13,7 +14,7 @@ import java.lang.ref.WeakReference;
 /**
  * 引导页
  */
-public class SplashActivity extends BaseActivity {
+public class SplashActivity extends Activity {
 
     private MyHandler handler;
 

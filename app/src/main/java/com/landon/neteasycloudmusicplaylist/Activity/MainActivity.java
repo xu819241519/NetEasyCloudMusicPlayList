@@ -1,6 +1,8 @@
 package com.landon.neteasycloudmusicplaylist.activity;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -8,7 +10,11 @@ import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 
+import com.android.volley.toolbox.StringRequest;
+import com.github.jdsjlzx.recyclerview.LRecyclerView;
+import com.github.jdsjlzx.recyclerview.LRecyclerViewAdapter;
 import com.landon.neteasycloudmusicplaylist.R;
 import com.landon.neteasycloudmusicplaylist.Utils.LogUtils;
 import com.landon.neteasycloudmusicplaylist.adapter.PlayListAdapter;
@@ -16,6 +22,7 @@ import com.landon.neteasycloudmusicplaylist.bean.PlayListBean;
 import com.landon.neteasycloudmusicplaylist.constant.Constant;
 import com.landon.neteasycloudmusicplaylist.database.CrawlerSQLHelper;
 import com.landon.neteasycloudmusicplaylist.net.Crawl;
+import com.landon.neteasycloudmusicplaylist.net.NetRequest;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -32,14 +39,13 @@ import butterknife.ButterKnife;
  swiperefresh、recyclerview support包中
  */
 public class MainActivity extends BaseActivity implements CrawlProgress{
-    //下拉刷新控件
-    @BindView(R.id.sr_layout)
-    SwipeRefreshLayout swipeRefreshLayout;
 
     @BindView(R.id.rv_playlist)
     RecyclerView rvPlayList;
     //适配器
     private PlayListAdapter rvAdapter;
+    //适配器
+    private LRecyclerViewAdapter lrvAdapter;
 
     private ProgressDialog progressDialog;
 
@@ -96,21 +102,50 @@ public class MainActivity extends BaseActivity implements CrawlProgress{
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         initViews();
+        initScheme();
+    }
+
+    private void initScheme() {
+        Uri uri = Uri.parse("orpheus://playlist/401324837");
+        Intent intent  = new Intent(Intent.ACTION_VIEW,uri);
+        startActivity(intent);
     }
 
     private void initViews() {
         rvAdapter = new PlayListAdapter(this);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this,2);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        lrvAdapter = new LRecyclerViewAdapter(this,rvAdapter);
         rvPlayList.setLayoutManager(gridLayoutManager);
         rvPlayList.setAdapter(rvAdapter);
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                curPage ++;
-                queryDataBase();
-            }
-        });
+//        rvPlayList.setLScrollListener(new LRecyclerView.LScrollListener() {
+//            @Override
+//            public void onRefresh() {
+//                curPage = 0;
+//                queryDataBase();
+//            }
+//
+//            @Override
+//            public void onScrollUp() {
+//
+//            }
+//
+//            @Override
+//            public void onScrollDown() {
+//
+//            }
+//
+//            @Override
+//            public void onBottom() {
+//                curPage++;
+//                queryDataBase();
+//            }
+//
+//            @Override
+//            public void onScrolled(int distanceX, int distanceY) {
+//
+//            }
+//        });
         queryDataBase();
         //rvPlayList.addItemDecoration(new RecycleViewDivider(this,LinearLayoutManager.HORIZONTAL));
         //crawl();
@@ -123,7 +158,8 @@ public class MainActivity extends BaseActivity implements CrawlProgress{
         CrawlerSQLHelper crawlerSQLHelper = new CrawlerSQLHelper(this);
         List<PlayListBean> beans = crawlerSQLHelper.query(curPage,pageSize);
         rvAdapter.update(beans);
-        swipeRefreshLayout.setRefreshing(false);
+        //rvPlayList.refreshComplete();
+        //lrvAdapter.notifyDataSetChanged();
     }
 
     private void crawl(){

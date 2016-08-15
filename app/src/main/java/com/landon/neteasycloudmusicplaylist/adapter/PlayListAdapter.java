@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.github.jdsjlzx.recyclerview.LRecyclerView;
 import com.landon.neteasycloudmusicplaylist.R;
 import com.landon.neteasycloudmusicplaylist.bean.PlayListBean;
 
@@ -19,7 +20,7 @@ import java.util.List;
 /**
  * Created by landon.xu on 2016/8/9.
  */
-public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHolder> {
+public class PlayListAdapter extends LRecyclerView.Adapter<PlayListAdapter.ViewHolder> {
 
     private Context context;
 
