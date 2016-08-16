@@ -51,7 +51,8 @@ public class HTMLParser {
             Elements covers = document.select(".u-cover-1");
             Elements decs = document.select(".dec");
             Elements authors = document.select(".s-fc3");
-            if(decs.size() == covers.size() && authors.size() >= decs.size()) {
+            Elements playCounts = document.select(".nb");
+            if(decs.size() == covers.size() && authors.size() >= decs.size() && playCounts.size() >= decs.size()) {
                 int size = decs.size();
                 for(int i = 0; i < decs.size(); ++i){
                     PlayListBean playListBean = new PlayListBean();
@@ -71,6 +72,16 @@ public class HTMLParser {
                     playListBean.setImage(covers.get(i).children().first().attr("src"));
                     //设置作者
                     playListBean.setAuthor(authors.get(i).attr("title"));
+                    //设置播放次数
+                    String strPlayCount = playCounts.get(i).text();
+                    int pos = strPlayCount.lastIndexOf("万");
+                    int count = 0;
+                    if(pos > 0){
+                        count = 10000;
+                        strPlayCount = strPlayCount.substring(0,pos);
+                    }
+                    count += Integer.parseInt(strPlayCount);
+                    playListBean.setPlayCount(count);
 
                     playList.add(playListBean);
                 }

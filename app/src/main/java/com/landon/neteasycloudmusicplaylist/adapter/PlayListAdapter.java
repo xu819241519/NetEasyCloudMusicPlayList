@@ -13,8 +13,11 @@ import com.bumptech.glide.Glide;
 import com.github.jdsjlzx.recyclerview.LRecyclerView;
 import com.landon.neteasycloudmusicplaylist.R;
 import com.landon.neteasycloudmusicplaylist.bean.PlayListBean;
+import com.landon.neteasycloudmusicplaylist.constant.Constant;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -62,6 +65,7 @@ public class PlayListAdapter extends LRecyclerView.Adapter<PlayListAdapter.ViewH
     public void onBindViewHolder(ViewHolder holder, int position) {
         holder.tvName.setText(playListBeanList.get(position).getName());
         Glide.with(context).load(playListBeanList.get(position).getImage()).into(holder.ivImage);
+        holder.tvPlay.setText(playListBeanList.get(position).getPlayCount() + "播放");
     }
 
     @Override
@@ -79,19 +83,90 @@ public class PlayListAdapter extends LRecyclerView.Adapter<PlayListAdapter.ViewH
      *
      * @param beans 歌单数据
      */
-    public void update(List<PlayListBean> beans) {
+    public void update(List<PlayListBean> beans, int sortType) {
         playListBeanList = beans;
+        sort(sortType);
         notifyDataSetChanged();
+    }
+
+    /**
+     * 添加数据
+     * @param beans
+     */
+    public void addData(List<PlayListBean> beans, int sortType){
+        if(beans != null && beans.size() > 0){
+            if(playListBeanList == null)
+                playListBeanList = new ArrayList<>();
+            playListBeanList.addAll(beans);
+        }
+        sort(sortType);
+    }
+
+    //清除数据
+    public void clearData(){
+        if(playListBeanList == null ){
+            playListBeanList = new ArrayList<>();
+            return ;
+        }
+        if(playListBeanList.size() > 0)
+            playListBeanList.clear();
+    }
+
+    //排序
+    public void sort(int sortType){
+        ListComparator listComparator = new ListComparator(sortType);
+        Collections.sort(playListBeanList,listComparator);
+    }
+
+    //排序规则
+    private class ListComparator implements Comparator<PlayListBean>{
+        private int sortType = -1;
+
+        public ListComparator(int sortType){
+            this.sortType = sortType;
+        }
+        @Override
+        public int compare(PlayListBean lhs, PlayListBean rhs) {
+            if(sortType == Constant.SORT_COLLECT_COUNT){
+                if(lhs.getCollectCount() > rhs.getCollectCount()){
+                    return -1;
+                }else if(lhs.getCollectCount() == rhs.getCollectCount()){
+                    return 0;
+                }else {
+                    return 1;
+                }
+            }else if(sortType == Constant.SORT_PLAY_COUNT){
+                if(lhs.getPlayCount() > rhs.getPlayCount()){
+                    return -1;
+                }else if(lhs.getPlayCount() == rhs.getPlayCount()){
+                    return 0;
+                }else {
+                    return 1;
+                }
+            }else{
+                if(lhs.getId() > rhs.getId()){
+                    return -1;
+                }else if(lhs.getId() == rhs.getId()){
+                    return 0;
+                }else {
+                    return 1;
+                }
+            }
+        }
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
         public ImageView ivImage;
         public TextView tvName;
+        public TextView tvCollect;
+        public TextView tvPlay;
 
         public ViewHolder(View itemView) {
             super(itemView);
             ivImage = (ImageView) itemView.findViewById(R.id.iv_image);
             tvName = (TextView) itemView.findViewById(R.id.tv_name);
+            tvCollect = (TextView) itemView.findViewById(R.id.tv_collect);
+            tvPlay = (TextView) itemView.findViewById(R.id.tv_play);
         }
     }
 }

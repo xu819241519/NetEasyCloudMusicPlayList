@@ -27,4 +27,8 @@ public class Constant {
 
     //异步查询
     public static int ASYNC_QUERY = 0;
+    //按播放数排序
+    public static final int SORT_PLAY_COUNT = 0;
+    //按收藏数排序
+    public static final int SORT_COLLECT_COUNT = 1;
 }

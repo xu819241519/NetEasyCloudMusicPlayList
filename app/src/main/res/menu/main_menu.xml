@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_update"
+        android:icon="@mipmap/update_playlist"
+        app:showAsAction="always"
+        android:title="@string/action_update"/>
+    <item
+        android:id="@+id/action_setting"
+        android:icon="@drawable/ic_menu_settings_holo_light"
+        app:showAsAction="always"
+        android:title="@string/action_more"/>
+</menu>

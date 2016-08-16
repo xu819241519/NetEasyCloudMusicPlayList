@@ -15,6 +15,10 @@ public class PlayListBean {
     private String author;
     //歌单图片
     private String image;
+    //播放次数
+    private int playCount;
+    //收藏数
+    private int collectCount;
 
     public void setId(long id){
         this.id = id;
@@ -46,6 +50,22 @@ public class PlayListBean {
 
     public void setAuthor(String author) {
         this.author = author;
+    }
+
+    public int getPlayCount() {
+        return playCount;
+    }
+
+    public void setPlayCount(int playCount) {
+        this.playCount = playCount;
+    }
+
+    public int getCollectCount() {
+        return collectCount;
+    }
+
+    public void setCollectCount(int collectCount) {
+        this.collectCount = collectCount;
     }
 
     public String getImage() {

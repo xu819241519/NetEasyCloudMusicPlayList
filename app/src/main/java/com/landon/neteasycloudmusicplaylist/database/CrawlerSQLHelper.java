@@ -23,7 +23,7 @@ public class CrawlerSQLHelper extends SQLiteOpenHelper {
     //数据库名称
     private static String databaseName = "neteasy_playlist";
     //数据库版本
-    private static int version = 1;
+    private static int version = 5;
     //数据库名字
     private String dataBaseName = "playlist";
 
@@ -33,12 +33,15 @@ public class CrawlerSQLHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE IF NOT EXISTS " + databaseName + " (id integer primary key,name varchar(500), author varchar(500), url varchar(500), image varchar(500))");
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + databaseName + " (id integer primary key,name varchar(500), author varchar(500), url varchar(500), image varchar(500), play_count integer, collect_count integer)");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
+        if(newVersion > oldVersion) {
+            db.execSQL("ALTER TABLE " + databaseName + " ADD COLUMN play_count integer default 0");
+            db.execSQL("ALTER TABLE " + databaseName + " ADD COLUMN collect_count integer default 0");
+        }
     }
 
     /**
@@ -62,6 +65,8 @@ public class CrawlerSQLHelper extends SQLiteOpenHelper {
             cv.put("author", bean.getAuthor());
             cv.put("image", bean.getImage());
             cv.put("url", bean.getUrl());
+            cv.put("play_count",bean.getPlayCount());
+            cv.put("collect_count",bean.getCollectCount());
             boolean result = db.insert(databaseName, null, cv) != -1;
 //        db.close();
             return result;
@@ -108,6 +113,8 @@ public class CrawlerSQLHelper extends SQLiteOpenHelper {
         cv.put("author", bean.getAuthor());
         cv.put("image", bean.getImage());
         cv.put("url", bean.getUrl());
+        cv.put("play_count",bean.getPlayCount());
+        cv.put("collect_count",bean.getCollectCount());
         boolean result = db.update(databaseName, cv, "id = ?", new String[]{String.format(Locale.CHINA, "%d", bean.getId())}) > 0;
 //        db.close();
         return result;
@@ -149,6 +156,8 @@ public class CrawlerSQLHelper extends SQLiteOpenHelper {
             bean.setAuthor(cursor.getString(2));
             bean.setUrl(cursor.getString(3));
             bean.setImage(cursor.getString(4));
+            bean.setPlayCount(cursor.getInt(5));
+            bean.setCollectCount(cursor.getInt(6));
         }
         cursor.close();
 //        db.close();
@@ -212,12 +221,19 @@ public class CrawlerSQLHelper extends SQLiteOpenHelper {
      * 分页查询
      * @param page
      * @param pageSize
+     * @param sortType
      * @return
      */
-    public List<PlayListBean> query(int page, int pageSize) {
+    public List<PlayListBean> query(int page, int pageSize, int sortType) {
         List<PlayListBean> beans = new ArrayList<>();
         SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + databaseName + " order by id limit " +  String.format(Locale.CHINA, "%d", page * pageSize) + "," + String.format(Locale.CHINA, "%d", pageSize),null);
+        String orderStr = "id";
+        if(sortType == Constant.SORT_COLLECT_COUNT){
+            orderStr = "collect_count";
+        }else if(sortType == Constant.SORT_PLAY_COUNT){
+            orderStr = "play_count";
+        }
+        Cursor cursor = db.rawQuery("SELECT * FROM " + databaseName + " order by " + orderStr + " desc limit " +  String.format(Locale.CHINA, "%d", page * pageSize) + "," + String.format(Locale.CHINA, "%d", pageSize),null);
         if (cursor == null) {
             return beans;
         }
@@ -232,6 +248,8 @@ public class CrawlerSQLHelper extends SQLiteOpenHelper {
             bean.setAuthor(cursor.getString(2));
             bean.setUrl(cursor.getString(3));
             bean.setImage(cursor.getString(4));
+            bean.setPlayCount(cursor.getInt(5));
+            bean.setCollectCount(cursor.getInt(6));
             beans.add(bean);
         }
         cursor.close();

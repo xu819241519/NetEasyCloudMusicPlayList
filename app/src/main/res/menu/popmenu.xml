@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/sort_collect"
+        android:title="按收藏次数排序"/>
+    <item
+        android:id="@+id/sort_play"
+        android:title="按播放次数排序"/>
+</menu>
