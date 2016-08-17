@@ -6,7 +6,7 @@ package com.landon.neteasycloudmusicplaylist.bean;
  */
 public class PlayListBean {
     //id
-    private long id;
+    private int id;
     //歌单名字
     private String name;
     //歌单地址
@@ -20,11 +20,11 @@ public class PlayListBean {
     //收藏数
     private int collectCount;
 
-    public void setId(long id){
+    public void setId(int id){
         this.id = id;
     }
 
-    public long getId(){
+    public int getId(){
         return id;
     }
 

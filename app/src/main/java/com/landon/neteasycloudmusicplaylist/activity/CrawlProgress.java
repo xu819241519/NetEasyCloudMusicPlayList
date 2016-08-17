@@ -15,5 +15,8 @@ public interface CrawlProgress {
      * @param total 总页数
      * @param curPage 当前页数
      */
-    public void crawlProgress(int total, int curPage, List<PlayListBean> datas);
+    public void crawlPageProgress(int total, int curPage);
+
+    public void crawlPlayListProgress(int total, int curlist, List<PlayListBean> beans);
+
 }

@@ -14,7 +14,7 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        CrashReport.initCrashReport(getApplicationContext(),"719ff75327",true);
+        CrashReport.initCrashReport(getApplicationContext(),"719ff75327",false);
 
         LeakCanary.install(this);
 

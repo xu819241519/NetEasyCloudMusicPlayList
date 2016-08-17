@@ -5,6 +5,7 @@ import com.landon.neteasycloudmusicplaylist.bean.PlayListBean;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
@@ -62,7 +63,7 @@ public class HTMLParser {
                         int index = url.lastIndexOf('=');
                         if(index > 0){
                             String sID = url.substring(index + 1);
-                            playListBean.setId(Long.parseLong(sID));
+                            playListBean.setId(Integer.parseInt(sID));
                         }
                         playListBean.setUrl("http://music.163.com" + url);
                     }
@@ -90,5 +91,19 @@ public class HTMLParser {
             }
         }
         return playList;
+    }
+
+    //获取收藏信息
+    public static void initCollectInfo(PlayListBean bean, String html){
+        if(html != null && !"".equals(html)){
+            Document document = Jsoup.parse(html);
+            Elements elements = document.select(".u-btni-fav");
+            if(elements != null && elements.size() > 0){
+                String collectCount = elements.first().attr("data-count");
+                if(collectCount != null && !"".equals(collectCount)){
+                    bean.setCollectCount(Integer.parseInt(collectCount));
+                }
+            }
+        }
     }
 }

@@ -25,4 +25,10 @@
   **[] $VALUES;
   public *;
 }
--keepresourcexmlelements manifest/application/meta-data@value=GlideModule
+
+#LRecyclerview_library
+-dontwarn com.github.jdsjlzx.**
+-keep class com.github.jdsjlzx.**{*;}
+
+
+-keep class org.jsoup.** {*;}

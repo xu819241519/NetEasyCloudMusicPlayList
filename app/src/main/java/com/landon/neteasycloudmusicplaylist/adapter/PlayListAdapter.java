@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * Created by landon.xu on 2016/8/9.
  */
-public class PlayListAdapter extends LRecyclerView.Adapter<PlayListAdapter.ViewHolder> {
+public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHolder> {
 
     private Context context;
 
@@ -66,6 +66,15 @@ public class PlayListAdapter extends LRecyclerView.Adapter<PlayListAdapter.ViewH
         holder.tvName.setText(playListBeanList.get(position).getName());
         Glide.with(context).load(playListBeanList.get(position).getImage()).into(holder.ivImage);
         holder.tvPlay.setText(playListBeanList.get(position).getPlayCount() + "播放");
+        holder.tvCollect.setText(playListBeanList.get(position).getCollectCount() + "收藏");
+    }
+
+    //获取歌单id
+    public int getPlayListID(int position){
+        if(playListBeanList != null && playListBeanList.size() > position){
+            return playListBeanList.get(position).getId();
+        }
+        return -1;
     }
 
     @Override
@@ -75,7 +84,7 @@ public class PlayListAdapter extends LRecyclerView.Adapter<PlayListAdapter.ViewH
 
     @Override
     public int getItemCount() {
-        return playListBeanList.size() == 0 ? 0 : playListBeanList.size();
+        return playListBeanList.size();
     }
 
     /**
@@ -100,6 +109,7 @@ public class PlayListAdapter extends LRecyclerView.Adapter<PlayListAdapter.ViewH
             playListBeanList.addAll(beans);
         }
         sort(sortType);
+        notifyDataSetChanged();
     }
 
     //清除数据

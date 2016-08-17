@@ -4,6 +4,7 @@ package com.landon.neteasycloudmusicplaylist.net;
  * Created by landon.xu on 2016/8/9.
  */
 public class NetResult {
+    private int type;
     private long id;
     private String msg;
 
@@ -21,5 +22,13 @@ public class NetResult {
 
     public void setMsg(String msg) {
         this.msg = msg;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
     }
 }

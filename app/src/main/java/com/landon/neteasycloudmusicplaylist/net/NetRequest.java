@@ -6,6 +6,7 @@ import android.os.Message;
 import android.util.Log;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -50,16 +51,18 @@ public class NetRequest {
      * @param handler
      * @param id      请求id
      */
-    public void request(String url, final Handler handler, final long id) {
+    public void request(String url, final Handler handler, final int type, final long id) {
         StringRequest stringRequest = new StringRequest(url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 Message msg = handler.obtainMessage(Constant.NET_SUCCESS);
                 NetResult result = new NetResult();
-                result.setId(id);
+                if(id != -1)
+                    result.setId(id);
+                result.setType(type);
                 result.setMsg(response);
                 msg.obj = result;
-                LogUtils.d("xu",response);
+                //LogUtils.d("xu",response);
                 msg.sendToTarget();
             }
         }, new Response.ErrorListener() {
@@ -78,6 +81,12 @@ public class NetRequest {
                 return map;
             }
         };
+        stringRequest.setRetryPolicy(new DefaultRetryPolicy(20*1000,1,1.0f));
+        stringRequest.setTag("net");
         mRequestQueue.add(stringRequest);
+    }
+
+    public void stopAllRequest(){
+        mRequestQueue.cancelAll("net");
     }
 }

@@ -3,4 +3,5 @@
     <string name="no_data">没有数据</string>
     <string name="action_update">更新歌单</string>
     <string name="action_more">更多</string>
+    <string name="init_crawl">开始获取数据</string>
 </resources>

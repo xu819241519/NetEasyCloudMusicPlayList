@@ -31,4 +31,9 @@ public class Constant {
     public static final int SORT_PLAY_COUNT = 0;
     //按收藏数排序
     public static final int SORT_COLLECT_COUNT = 1;
+    //启动scheme
+    public static final String SCHEME = "orpheus://playlist/";
+
+    //是否存在数据库文件
+    public static boolean existDBFile = false;
 }
