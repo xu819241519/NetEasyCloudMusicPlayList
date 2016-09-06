@@ -121,8 +121,8 @@ public class Crawl {
     }
 
     private void crawlCollectInfo() {
+        NetRequest netRequest = NetRequest.getInstance(context);
         for (PlayListBean bean : playListData) {
-            NetRequest netRequest = NetRequest.getInstance(context);
             netRequest.request(bean.getUrl(), cHandler, CRAWL_COLLECT, bean.getId());
         }
     }

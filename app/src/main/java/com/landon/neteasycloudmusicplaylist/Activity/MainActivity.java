@@ -82,6 +82,8 @@ public class MainActivity extends BaseActivity implements CrawlProgress {
     //请求网络后的读写权限
     private static int WRITE_EXTERNAL_PERMISSION_INTERNET = 2;
 
+    private Crawl crawl;
+
     @Override
     public void crawlPageProgress(int total, int curPage) {
         LogUtils.d("xu", "一共" + total + "页，正在获取第" + curPage + "页");
@@ -270,7 +272,7 @@ public class MainActivity extends BaseActivity implements CrawlProgress {
     }
 
     private void crawl() {
-        Crawl crawl = new Crawl(this, this);
+        crawl = new Crawl(this, this);
         crawl.beginCrawl();
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("正在获取数据...");

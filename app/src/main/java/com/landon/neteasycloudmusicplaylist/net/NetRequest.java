@@ -63,6 +63,7 @@ public class NetRequest {
                 result.setMsg(response);
                 msg.obj = result;
                 //LogUtils.d("xu",response);
+                LogUtils.d("xu","id" + id);
                 msg.sendToTarget();
             }
         }, new Response.ErrorListener() {
@@ -81,7 +82,7 @@ public class NetRequest {
                 return map;
             }
         };
-        stringRequest.setRetryPolicy(new DefaultRetryPolicy(20*1000,1,1.0f));
+        stringRequest.setRetryPolicy(new DefaultRetryPolicy(2*1000,1,1.0f));
         stringRequest.setTag("net");
         mRequestQueue.add(stringRequest);
     }

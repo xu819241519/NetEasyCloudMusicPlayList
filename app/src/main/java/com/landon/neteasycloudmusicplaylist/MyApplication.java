@@ -16,7 +16,7 @@ public class MyApplication extends Application {
 
         CrashReport.initCrashReport(getApplicationContext(),"719ff75327",false);
 
-        LeakCanary.install(this);
+        //LeakCanary.install(this);
 
     }
 }
