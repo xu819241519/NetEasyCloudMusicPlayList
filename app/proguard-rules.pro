@@ -32,3 +32,4 @@
 
 
 -keep class org.jsoup.** {*;}
+

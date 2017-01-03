@@ -22,6 +22,8 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.github.jdsjlzx.interfaces.OnItemClickListener;
+import com.github.jdsjlzx.interfaces.OnLoadMoreListener;
+import com.github.jdsjlzx.interfaces.OnRefreshListener;
 import com.github.jdsjlzx.recyclerview.LRecyclerView;
 import com.github.jdsjlzx.recyclerview.LRecyclerViewAdapter;
 import com.landon.neteasycloudmusicplaylist.R;
@@ -68,7 +70,7 @@ public class MainActivity extends BaseActivity implements CrawlProgress {
     //获取page进度
     private static final int PAGE_PROGRESS_UPDATE = 0;
     //获取歌单进度
-    private static final int PLAYLIST_PROGRESS_UPDATE =1;
+    private static final int PLAYLIST_PROGRESS_UPDATE = 1;
     //获取数据完成
     private static final int PROGRESS_COMPLETE = 2;
 
@@ -87,10 +89,10 @@ public class MainActivity extends BaseActivity implements CrawlProgress {
     @Override
     public void crawlPageProgress(int total, int curPage) {
         LogUtils.d("xu", "一共" + total + "页，正在获取第" + curPage + "页");
-            Message msg = handler.obtainMessage(PAGE_PROGRESS_UPDATE);
-            msg.arg1 = total;
-            msg.arg2 = curPage;
-            msg.sendToTarget();
+        Message msg = handler.obtainMessage(PAGE_PROGRESS_UPDATE);
+        msg.arg1 = total;
+        msg.arg2 = curPage;
+        msg.sendToTarget();
 
     }
 
@@ -102,7 +104,7 @@ public class MainActivity extends BaseActivity implements CrawlProgress {
             crawlerSQLHelper.insert(beans);
             Message message = handler.obtainMessage(PROGRESS_COMPLETE);
             message.sendToTarget();
-        }else{
+        } else {
             Message msg = handler.obtainMessage(PLAYLIST_PROGRESS_UPDATE);
             msg.arg1 = total;
             msg.arg2 = curlist;
@@ -110,27 +112,28 @@ public class MainActivity extends BaseActivity implements CrawlProgress {
         }
     }
 
-    private static class MainHandler extends Handler{
+    private static class MainHandler extends Handler {
         private WeakReference<MainActivity> mActivity;
-        public MainHandler(MainActivity activity){
+
+        public MainHandler(MainActivity activity) {
             mActivity = new WeakReference<MainActivity>(activity);
         }
 
         @Override
         public void handleMessage(Message msg) {
             MainActivity activity = mActivity.get();
-            if(activity != null){
-                switch (msg.what){
+            if (activity != null) {
+                switch (msg.what) {
                     case PAGE_PROGRESS_UPDATE:
                         if (activity.progressDialog != null) {
-                            activity.progressDialog.setProgress((int)msg.arg2 * 100 / (int)msg.arg1);
-                            activity.progressDialog.setMessage("正在获取第" + (int)msg.arg2 + "页，共有" + (int)msg.arg1 + "页");
+                            activity.progressDialog.setProgress((int) msg.arg2 * 100 / (int) msg.arg1);
+                            activity.progressDialog.setMessage("正在获取第" + (int) msg.arg2 + "页，共有" + (int) msg.arg1 + "页");
                         }
                         break;
                     case PLAYLIST_PROGRESS_UPDATE:
                         if (activity.progressDialog != null) {
-                            activity.progressDialog.setProgress((int)msg.arg2 * 100 / (int)msg.arg1);
-                            activity.progressDialog.setMessage("正在获取第" + (int)msg.arg2 + "歌单，共有" + (int)msg.arg1 + "歌单");
+                            activity.progressDialog.setProgress((int) msg.arg2 * 100 / (int) msg.arg1);
+                            activity.progressDialog.setMessage("正在获取第" + (int) msg.arg2 + "歌单，共有" + (int) msg.arg1 + "歌单");
                         }
                         break;
                     case PROGRESS_COMPLETE:
@@ -160,7 +163,7 @@ public class MainActivity extends BaseActivity implements CrawlProgress {
     //通过scheme启动网页云音乐
     private void postScheme(int playlistID) {
         Uri uri = Uri.parse(Constant.SCHEME + playlistID);
-        Intent intent  = new Intent(Intent.ACTION_VIEW,uri);
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         startActivity(intent);
     }
 
@@ -178,50 +181,66 @@ public class MainActivity extends BaseActivity implements CrawlProgress {
         //初始化lrecyclerview
         rvAdapter = new PlayListAdapter(this);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 2);
-        lrvAdapter = new LRecyclerViewAdapter(this, rvAdapter);
+        lrvAdapter = new LRecyclerViewAdapter(rvAdapter);
         rvPlayList.setLayoutManager(gridLayoutManager);
         rvPlayList.setAdapter(lrvAdapter);
-        rvPlayList.setLScrollListener(new LRecyclerView.LScrollListener() {
+        rvPlayList.setOnLoadMoreListener(new OnLoadMoreListener() {
             @Override
-            public void onRefresh() {
-                curPage = 0;
-                queryDataBase(true);
-            }
-
-            @Override
-            public void onScrollUp() {
-
-            }
-
-            @Override
-            public void onScrollDown() {
-
-            }
-
-            @Override
-            public void onBottom() {
+            public void onLoadMore() {
                 if (hasData) {
                     curPage++;
                     queryDataBase(false);
                 }
             }
-
+        });
+        rvPlayList.setOnRefreshListener(new OnRefreshListener() {
             @Override
-            public void onScrolled(int distanceX, int distanceY) {
-
+            public void onRefresh() {
+                curPage = 0;
+                queryDataBase(true);
             }
         });
+//        rvPlayList.setLScrollListener(new LRecyclerView.LScrollListener() {
+//            @Override
+//            public void onRefresh() {
+//                curPage = 0;
+//                queryDataBase(true);
+//            }
+//
+//            @Override
+//            public void onScrollUp() {
+//
+//            }
+//
+//            @Override
+//            public void onScrollDown() {
+//
+//            }
+//
+//            @Override
+//            public void onBottom() {
+//                if (hasData) {
+//                    curPage++;
+//                    queryDataBase(false);
+//                }
+//            }
+//
+//            @Override
+//            public void onScrolled(int distanceX, int distanceY) {
+//
+//            }
+//
+//            @Override
+//            public void onScrollStateChanged(int state) {
+//
+//            }
+//        });
         lrvAdapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(View view, int i) {
                 int id = rvAdapter.getPlayListID(i);
-                if(id != -1)
+                if (id != -1)
                     postScheme(id);
-            }
-
-            @Override
-            public void onItemLongClick(View view, int i) {
-
             }
         });
 
@@ -236,7 +255,7 @@ public class MainActivity extends BaseActivity implements CrawlProgress {
      * @param clear 是否清除以前的数据
      */
     private void queryDataBase(boolean clear) {
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
 
             CrawlerSQLHelper crawlerSQLHelper = new CrawlerSQLHelper(this);
             if (clear) {
@@ -251,21 +270,20 @@ public class MainActivity extends BaseActivity implements CrawlProgress {
             } else hasData = false;
             LogUtils.d("landon_empty_count", "" + rvAdapter.getItemCount());
             LogUtils.d("landon_empty_count_2", "" + lrvAdapter.getItemCount());
-        }else{
-            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},clear ? WRITE_EXTERNAL_PERMISSION_CLEAR : WRITE_EXTERNAL_PERMISSION);
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, clear ? WRITE_EXTERNAL_PERMISSION_CLEAR : WRITE_EXTERNAL_PERMISSION);
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(requestCode == WRITE_EXTERNAL_PERMISSION || requestCode == WRITE_EXTERNAL_PERMISSION_CLEAR){
-            if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+        if (requestCode == WRITE_EXTERNAL_PERMISSION || requestCode == WRITE_EXTERNAL_PERMISSION_CLEAR) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 queryDataBase(requestCode != WRITE_EXTERNAL_PERMISSION);
             }
-        }
-        else if(requestCode == WRITE_EXTERNAL_PERMISSION_INTERNET){
-            if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+        } else if (requestCode == WRITE_EXTERNAL_PERMISSION_INTERNET) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 downLoadUpdate();
             }
         }
@@ -280,7 +298,7 @@ public class MainActivity extends BaseActivity implements CrawlProgress {
         progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialog) {
-                Toast.makeText(MainActivity.this,"已取消更新",Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "已取消更新", Toast.LENGTH_SHORT).show();
                 NetRequest.getInstance(MainActivity.this).stopAllRequest();
 
             }
@@ -318,7 +336,7 @@ public class MainActivity extends BaseActivity implements CrawlProgress {
 
     //从网络上获取数据
     private void downLoadUpdate() {
-        if(ContextCompat.checkSelfPermission(this,Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             if (NetworkUtils.isConnected(this)) {
                 new AlertDialog.Builder(this).setMessage("从网络获取最新数据，因为歌单有1000多，如果用的是流量，可能会花费较多流量的，时间可能会占用3到5分钟，是否获取？").setPositiveButton("获取", new DialogInterface.OnClickListener() {
                     @Override
@@ -335,8 +353,8 @@ public class MainActivity extends BaseActivity implements CrawlProgress {
             } else {
                 Toast.makeText(this, "网络不可用，请检查网络", Toast.LENGTH_SHORT).show();
             }
-        }else{
-            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},WRITE_EXTERNAL_PERMISSION_INTERNET);
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_EXTERNAL_PERMISSION_INTERNET);
         }
     }
 
@@ -345,17 +363,17 @@ public class MainActivity extends BaseActivity implements CrawlProgress {
     private void showPopupMenu() {
         final PopupMenu popupMenu = new PopupMenu(this, findViewById(R.id.action_setting));
         getMenuInflater().inflate(R.menu.popmenu, popupMenu.getMenu());
-        if(sortType == Constant.SORT_COLLECT_COUNT)
+        if (sortType == Constant.SORT_COLLECT_COUNT)
             popupMenu.getMenu().findItem(R.id.sort_collect).setCheckable(true).setChecked(true);
-        else if(sortType == Constant.SORT_PLAY_COUNT)
+        else if (sortType == Constant.SORT_PLAY_COUNT)
             popupMenu.getMenu().findItem(R.id.sort_play).setCheckable(true).setChecked(true);
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                switch (item.getItemId()){
+                switch (item.getItemId()) {
                     case R.id.sort_collect:
                         popupMenu.getMenu().findItem(R.id.sort_collect).setCheckable(true).setChecked(true);
-                        if(sortType != Constant.SORT_COLLECT_COUNT){
+                        if (sortType != Constant.SORT_COLLECT_COUNT) {
                             sortType = Constant.SORT_COLLECT_COUNT;
                             curPage = 0;
                             queryDataBase(true);
@@ -363,7 +381,7 @@ public class MainActivity extends BaseActivity implements CrawlProgress {
                         break;
                     case R.id.sort_play:
                         popupMenu.getMenu().findItem(R.id.sort_play).setCheckable(true).setChecked(true);
-                        if(sortType != Constant.SORT_PLAY_COUNT){
+                        if (sortType != Constant.SORT_PLAY_COUNT) {
                             sortType = Constant.SORT_PLAY_COUNT;
                             curPage = 0;
                             queryDataBase(true);
