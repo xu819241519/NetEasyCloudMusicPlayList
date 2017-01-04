@@ -8,7 +8,9 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 
+import com.landon.neteasycloudmusicplaylist.Utils.LogUtils;
 import com.landon.neteasycloudmusicplaylist.bean.PlayListBean;
 import com.landon.neteasycloudmusicplaylist.constant.Constant;
 import com.landon.neteasycloudmusicplaylist.net.Crawl;
@@ -85,7 +87,9 @@ public class CrawlerSQLHelper extends SQLiteOpenHelper {
      * @return 成功插入返回true
      */
     public boolean insert(PlayListBean bean) {
+        LogUtils.d("CrawlerSQLHelper","before insert");
         if(Constant.existDBFile) {
+            LogUtils.d("CrawlerSQLHelper","insert");
             SQLiteDatabase db = getWritableDatabase();
             Cursor cur = db.query(tableName, null, "id = ?", new String[]{String.format(Locale.CHINA, "%d", bean.getId())}, null, null, null);
             if (cur != null && cur.getCount() > 0) {
@@ -102,11 +106,12 @@ public class CrawlerSQLHelper extends SQLiteOpenHelper {
                 cv.put("url", bean.getUrl());
                 cv.put("play_count", bean.getPlayCount());
                 cv.put("collect_count", bean.getCollectCount());
-                boolean result = db.insert(tableName, null, cv) != -1;
-//        db.close();
-                return result;
+                //        db.close();
+                LogUtils.d("CrawlerSQLHelper",bean.toString());
+                return db.insert(tableName, null, cv) != -1;
             }
         }else{
+            LogUtils.d("CrawlerSQLHelper","not exist db file");
             return false;
         }
     }
@@ -118,7 +123,9 @@ public class CrawlerSQLHelper extends SQLiteOpenHelper {
      * @return
      */
     public boolean insert(List<PlayListBean> beans) {
+        LogUtils.d("CrawlerSQLHelper","before insert list");
         if(Constant.existDBFile) {
+            LogUtils.d("CrawlerSQLHelper","insert list");
             if (beans != null && beans.size() > 0) {
                 for (int i = 0; i < beans.size(); ++i) {
                     insert(beans.get(i));

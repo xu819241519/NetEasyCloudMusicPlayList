@@ -33,3 +33,4 @@
 
 -keep class org.jsoup.** {*;}
 
+-keep class com.landon.neteasycloudmusicplaylist.bean.**{ * ;}

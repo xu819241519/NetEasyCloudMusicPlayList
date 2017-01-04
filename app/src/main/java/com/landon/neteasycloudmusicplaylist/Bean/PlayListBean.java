@@ -75,4 +75,9 @@ public class PlayListBean {
     public void setImage(String image) {
         this.image = image;
     }
+
+    @Override
+    public String toString() {
+        return "Name:" + getName() + "  CollectCount:" + getCollectCount() + "  PlayCount:" + getPlayCount();
+    }
 }
