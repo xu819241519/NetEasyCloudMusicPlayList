@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -51,8 +52,8 @@ public class NetRequest {
      * @param handler
      * @param id      请求id
      */
-    public void request(String url, final Handler handler, final int type, final long id) {
-        StringRequest stringRequest = new StringRequest(url, new Response.Listener<String>() {
+    public void request(String url, final Handler handler, final int type, final long id, final Request.Priority priority) {
+        final StringRequest stringRequest = new StringRequest(url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 Message msg = handler.obtainMessage(Constant.NET_SUCCESS);
@@ -71,6 +72,12 @@ public class NetRequest {
             public void onErrorResponse(VolleyError error) {
                 LogUtils.d("xu",error.getMessage());
                 Message msg = handler.obtainMessage(Constant.NET_ERROR);
+                NetResult result = new NetResult();
+                if(id != -1)
+                    result.setId(id);
+                result.setType(type);
+                result.setMsg(error.getMessage());
+                msg.obj = result;
                 msg.sendToTarget();
 
             }
@@ -81,9 +88,15 @@ public class NetRequest {
                 map.put("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36");
                 return map;
             }
+
+            @Override
+            public Priority getPriority() {
+                return priority;
+            }
         };
         stringRequest.setRetryPolicy(new DefaultRetryPolicy(2*1000,1,1.0f));
         stringRequest.setTag("net");
+
         mRequestQueue.add(stringRequest);
     }
 

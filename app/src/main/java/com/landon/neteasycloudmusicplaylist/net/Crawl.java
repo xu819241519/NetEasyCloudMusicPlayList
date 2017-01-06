@@ -3,7 +3,9 @@ package com.landon.neteasycloudmusicplaylist.net;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
+import android.text.TextUtils;
 
+import com.android.volley.Request;
 import com.landon.neteasycloudmusicplaylist.Utils.LogUtils;
 import com.landon.neteasycloudmusicplaylist.activity.CrawlProgress;
 import com.landon.neteasycloudmusicplaylist.bean.PlayListBean;
@@ -38,8 +40,12 @@ public class Crawl {
     private int totalPlayList = 0;
     //已经爬取的页数
     private int curPage = 0;
+    //爬去失败的页数
+    private int failedPage = 0;
     //已经获取的歌单数
-    private int curPlyaList = 0;
+    private int curPlayList = 0;
+    //爬去失败的歌单数
+    private int failedPlayList = 0;
     //爬取的数据
     private List<PlayListBean> playListData;
 
@@ -59,32 +65,46 @@ public class Crawl {
                 NetResult result = (NetResult) msg.obj;
                 if (result != null) {
                     if (result.getType() == GET_PAGE_COUNT) {
-                        crawl.totalPage = HTMLParser.getTotalPage(result.getMsg());
-                        for (int i = 0; i < crawl.totalPage; ++i) {
-                            crawl.crawl(i);
+                        if(msg.what == Constant.NET_SUCCESS) {
+                            crawl.totalPage = HTMLParser.getTotalPage(result.getMsg());
+                            for (int i = 0; i < crawl.totalPage; ++i) {
+                                crawl.crawl(i);
+                            }
+                        }else{
+                            LogUtils.d("landon","获取页数错误：" + result.getMsg());
                         }
                     } else if (result.getType() == CRAWL_PAGE) {
-                        List<PlayListBean> beans = HTMLParser.getPlayList(result.getMsg());
-                        if (beans != null) {
-                            crawl.playListData.addAll(beans);
-                            crawl.curPage++;
-                            if (crawl.curPage == crawl.totalPage) {
-                                crawl.totalPlayList = crawl.playListData.size();
-                                crawl.crawlCollectInfo();
+                        crawl.curPage++;
+                        if(msg.what == Constant.NET_SUCCESS) {
+                            List<PlayListBean> beans = HTMLParser.getPlayList(result.getMsg());
+                            if (beans != null) {
+                                crawl.playListData.addAll(beans);
+                                if (crawl.curPage == crawl.totalPage) {
+                                    crawl.totalPlayList = crawl.playListData.size();
+                                    crawl.crawlCollectInfo();
+                                }
+                                LogUtils.d("xu", "抓取第" + crawl.curPage + "页");
+                                crawl.crawlProgress.crawlPageProgress(crawl.totalPage, crawl.curPage,crawl.failedPage);
                             }
-                            LogUtils.d("xu", "抓取第" + crawl.curPage + "页");
-                            crawl.crawlProgress.crawlPageProgress(crawl.totalPage, crawl.curPage);
+                        }else{
+                            crawl.failedPage++;
+                            LogUtils.d("landon","获取第" + result.getId() + "页错误：" + result.getMsg());
                         }
                     } else if (result.getType() == CRAWL_COLLECT) {
-                        LogUtils.d("xu", "抓取第" + crawl.curPlyaList + "个歌单，共" + crawl.totalPlayList + "个歌单");
-                        crawl.curPlyaList++;
-                        for (int i = 0; i < crawl.totalPlayList; ++i) {
-                            if (crawl.playListData.get(i).getId() == result.getId()) {
-                                HTMLParser.initCollectInfo(crawl.playListData.get(i), result.getMsg());
-                                break;
+                        crawl.curPlayList++;
+                        if(msg.what == Constant.NET_SUCCESS) {
+                            LogUtils.d("xu", "抓取第" + crawl.curPlayList + "个歌单，共" + crawl.totalPlayList + "个歌单");
+                            for (int i = 0; i < crawl.totalPlayList; ++i) {
+                                if (crawl.playListData.get(i).getId() == result.getId()) {
+                                    HTMLParser.initCollectInfo(crawl.playListData.get(i), result.getMsg());
+                                    break;
+                                }
                             }
+                            crawl.crawlProgress.crawlPlayListProgress(crawl.totalPlayList, crawl.curPlayList, crawl.failedPlayList, crawl.playListData);
+                        }else{
+                            crawl.failedPlayList++;
+                            LogUtils.d("landon","获取第" + result.getId() + "个歌单错误：" + result.getMsg());
                         }
-                        crawl.crawlProgress.crawlPlayListProgress(crawl.totalPlayList, crawl.curPlyaList, crawl.playListData);
 
                     }
                 }
@@ -106,24 +126,33 @@ public class Crawl {
     public void beginCrawl() {
         //首先获取总共需要爬去的页数
         NetRequest netRequest = NetRequest.getInstance(context);
-        netRequest.request(Constant.getURL(0), cHandler, GET_PAGE_COUNT, -1);
+        netRequest.request(Constant.getURL(0), cHandler, GET_PAGE_COUNT, -1, Request.Priority.HIGH);
         playListData = new ArrayList<>();
         curPage = 0;
         totalPage = 0;
-        curPlyaList = 0;
+        curPlayList = 0;
         totalPlayList = 0;
+        failedPage = 0;
+        failedPlayList = 0;
     }
 
     private void crawl(int page) {
         String url = Constant.getURL(page);
         NetRequest netRequest = NetRequest.getInstance(context);
-        netRequest.request(url, cHandler, CRAWL_PAGE, -1);
+        netRequest.request(url, cHandler, CRAWL_PAGE, -1, Request.Priority.HIGH);
     }
 
     private void crawlCollectInfo() {
         NetRequest netRequest = NetRequest.getInstance(context);
         for (PlayListBean bean : playListData) {
-            netRequest.request(bean.getUrl(), cHandler, CRAWL_COLLECT, bean.getId());
+            netRequest.request(bean.getUrl(), cHandler, CRAWL_COLLECT, bean.getId(), Request.Priority.NORMAL);
+        }
+    }
+
+    private void crawlCollectInfo(PlayListBean bean){
+        if(bean != null){
+            NetRequest netRequest = NetRequest.getInstance(context);
+            netRequest.request(bean.getUrl(), cHandler, CRAWL_COLLECT, bean.getId(), Request.Priority.NORMAL);
         }
     }
 }

@@ -14,9 +14,10 @@ public interface CrawlProgress {
      * 爬取进度通知
      * @param total 总页数
      * @param curPage 当前页数
+     * @param failedCount 网络爬取失败的个数
      */
-    public void crawlPageProgress(int total, int curPage);
+    public void crawlPageProgress(int total, int curPage, int failedCount);
 
-    public void crawlPlayListProgress(int total, int curlist, List<PlayListBean> beans);
+    public void crawlPlayListProgress(int total, int curlist, int failedCount, List<PlayListBean> beans);
 
 }
