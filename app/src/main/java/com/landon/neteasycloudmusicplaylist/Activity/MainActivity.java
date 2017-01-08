@@ -71,7 +71,7 @@ public class MainActivity extends BaseActivity implements IView {
     private static int WRITE_EXTERNAL_PERMISSION_INTERNET = 2;
 
 //    @Override
-//    public void crawlPageProgress(int total, int curPage, int failedCount) {
+//    public void crawlProgress(int total, int curPage, int failedCount) {
 //        LogUtils.d("xu", "一共" + total + "页，正在获取第" + curPage + "页");
 //        Message msg = handler.obtainMessage(PAGE_PROGRESS_UPDATE);
 //        msg.arg1 = total;
@@ -382,10 +382,24 @@ public class MainActivity extends BaseActivity implements IView {
         if (!TextUtils.isEmpty(msg)) {
             if (progressDialog == null) {
                 progressDialog = new ProgressDialog(MainActivity.this);
+                progressDialog.setCanceledOnTouchOutside(false);
+                progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        LogUtils.d("landon","cancel dialog");
+                    }
+                });
                 progressDialog.setMessage(msg);
                 progressDialog.show();
             } else {
                 progressDialog.setMessage(msg);
+                progressDialog.setCanceledOnTouchOutside(false);
+                progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        LogUtils.d("landon","cancel dialog");
+                    }
+                });
                 progressDialog.show();
 
             }
