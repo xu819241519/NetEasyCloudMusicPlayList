@@ -5,7 +5,6 @@ import com.landon.neteasycloudmusicplaylist.bean.PlayListBean;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
@@ -44,6 +43,40 @@ public class HTMLParser {
      * @param html
      * @return 歌单列表
      */
+    public static List<String> getPlayListURL(String html) {
+        List<String> playList = null;
+        if (html != null) {
+            Document document = Jsoup.parse(html);
+            Elements covers = document.select(".u-cover-1");
+            Elements decs = document.select(".dec");
+            Elements authors = document.select(".s-fc3");
+            Elements playCounts = document.select(".nb");
+            if (decs.size() == covers.size() && authors.size() >= decs.size() && playCounts.size() >= decs.size()) {
+                int size = decs.size();
+                for (int i = 0; i < decs.size(); ++i) {
+                    String url = decs.get(i).children().first().attr("href");
+                    if (url != null) {
+                        if(playList == null){
+                            playList =new ArrayList<>();
+                        }
+                        playList.add("http://music.163.com" + url);
+                    }
+                }
+            }
+        }
+        return playList;
+    }
+
+    public static PlayListBean getPlayListBean(String html){
+        return null;
+    }
+
+    /**
+     * 解析获得歌单
+     *
+     * @param html
+     * @return 歌单列表
+     */
     public static List<PlayListBean> getPlayList(String html) {
         List<PlayListBean> playList = new ArrayList<>();
         if (html != null) {
@@ -53,15 +86,15 @@ public class HTMLParser {
             Elements decs = document.select(".dec");
             Elements authors = document.select(".s-fc3");
             Elements playCounts = document.select(".nb");
-            if(decs.size() == covers.size() && authors.size() >= decs.size() && playCounts.size() >= decs.size()) {
+            if (decs.size() == covers.size() && authors.size() >= decs.size() && playCounts.size() >= decs.size()) {
                 int size = decs.size();
-                for(int i = 0; i < decs.size(); ++i){
+                for (int i = 0; i < decs.size(); ++i) {
                     PlayListBean playListBean = new PlayListBean();
                     //设置URL和id
                     String url = decs.get(i).children().first().attr("href");
-                    if(url != null){
+                    if (url != null) {
                         int index = url.lastIndexOf('=');
-                        if(index > 0){
+                        if (index > 0) {
                             String sID = url.substring(index + 1);
                             playListBean.setId(Integer.parseInt(sID));
                         }
@@ -77,30 +110,31 @@ public class HTMLParser {
                     String strPlayCount = playCounts.get(i).text();
                     int pos = strPlayCount.lastIndexOf("万");
                     int count = 0;
-                    if(pos > 0){
+                    if (pos > 0) {
                         count = 10000;
-                        strPlayCount = strPlayCount.substring(0,pos);
+                        strPlayCount = strPlayCount.substring(0, pos);
                     }
                     count += Integer.parseInt(strPlayCount);
                     playListBean.setPlayCount(count);
 
                     playList.add(playListBean);
                 }
-            }else{
-                LogUtils.e("landon","爬取列表数目不对应");
+            } else {
+                LogUtils.e("landon", "爬取列表数目不对应");
             }
         }
         return playList;
     }
 
     //获取收藏信息
-    public static void initCollectInfo(PlayListBean bean, String html){
-        if(html != null && !"".equals(html)){
+
+    public static void initCollectInfo(PlayListBean bean, String html) {
+        if (html != null && !"".equals(html)) {
             Document document = Jsoup.parse(html);
             Elements elements = document.select(".u-btni-fav");
-            if(elements != null && elements.size() > 0){
+            if (elements != null && elements.size() > 0) {
                 String collectCount = elements.first().attr("data-count");
-                if(collectCount != null && !"".equals(collectCount)){
+                if (collectCount != null && !"".equals(collectCount)) {
                     bean.setCollectCount(Integer.parseInt(collectCount));
                 }
             }

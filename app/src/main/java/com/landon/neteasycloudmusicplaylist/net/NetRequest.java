@@ -48,38 +48,30 @@ public class NetRequest {
     /**
      * 请求网络
      *
-     * @param url     请求url
-     * @param handler
-     * @param id      请求id
      */
-    public void request(String url, final Handler handler, final int type, final long id, final Request.Priority priority) {
+    public void request(String url, final Message message, final Request.Priority priority, String tag) {
         final StringRequest stringRequest = new StringRequest(url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Message msg = handler.obtainMessage(Constant.NET_SUCCESS);
-                NetResult result = new NetResult();
-                if(id != -1)
-                    result.setId(id);
-                result.setType(type);
-                result.setMsg(response);
-                msg.obj = result;
-                //LogUtils.d("xu",response);
-                LogUtils.d("xu","id" + id);
-                msg.sendToTarget();
+                if(message !=null) {
+                    NetResult result= new NetResult();
+                    result.setStatus(NetResult.STATUS_SUCCESS);
+                    result.setMsg(response);
+                    message.obj = result;
+                    message.sendToTarget();
+                }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 LogUtils.d("xu",error.getMessage());
-                Message msg = handler.obtainMessage(Constant.NET_ERROR);
-                NetResult result = new NetResult();
-                if(id != -1)
-                    result.setId(id);
-                result.setType(type);
-                result.setMsg(error.getMessage());
-                msg.obj = result;
-                msg.sendToTarget();
-
+                if(message != null) {
+                    NetResult result = new NetResult();
+                    result.setMsg(error.getMessage());
+                    result.setStatus(NetResult.STATUS_FAILED);
+                    message.obj = result;
+                    message.sendToTarget();
+                }
             }
         }){
             @Override
@@ -95,12 +87,12 @@ public class NetRequest {
             }
         };
         stringRequest.setRetryPolicy(new DefaultRetryPolicy(2*1000,1,1.0f));
-        stringRequest.setTag("net");
-
+        stringRequest.setTag(tag);
         mRequestQueue.add(stringRequest);
     }
 
-    public void stopAllRequest(){
-        mRequestQueue.cancelAll("net");
+    public void cancelRequest(String tag){
+        mRequestQueue.cancelAll(tag);
     }
+
 }
