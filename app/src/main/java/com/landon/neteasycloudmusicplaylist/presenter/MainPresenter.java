@@ -10,29 +10,33 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
+import com.landon.neteasycloudmusicplaylist.Utils.LogUtils;
+import com.landon.neteasycloudmusicplaylist.activity.CrawlProgressListener;
 import com.landon.neteasycloudmusicplaylist.activity.IView;
 import com.landon.neteasycloudmusicplaylist.activity.MainActivity;
 import com.landon.neteasycloudmusicplaylist.bean.PlayListBean;
 import com.landon.neteasycloudmusicplaylist.constant.Constant;
 import com.landon.neteasycloudmusicplaylist.database.CrawlerSQLHelper;
+import com.landon.neteasycloudmusicplaylist.net.Crawl;
 
 import java.util.List;
 
 import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
 /**
  * Created by landon on 2017/1/5.
  */
 
-public class MainPresenter {
+public class MainPresenter implements CrawlProgressListener {
 
     //当前第几页
     private int curPage = 0;
     //每一页的数量
-    private int pageSize = 30;
+    private static final int PAGE_SIZE = 30;
 
     //默认是收藏数排序
     private int sortType = Constant.SORT_COLLECT_COUNT;
@@ -40,6 +44,10 @@ public class MainPresenter {
     private IView mView;
 
     private Context mContext;
+
+    private Crawl crawl;
+
+    private CrawlerSQLHelper mSQLHelper;
 
     //请求读写权限
     private static int WRITE_EXTERNAL_PERMISSION = 0;
@@ -67,7 +75,7 @@ public class MainPresenter {
             @Override
             public void call(Subscriber<? super List<PlayListBean>> subscriber) {
                 CrawlerSQLHelper crawlerSQLHelper = new CrawlerSQLHelper(mContext);
-                List<PlayListBean> beans = crawlerSQLHelper.query(curPage, pageSize, sortType);
+                List<PlayListBean> beans = crawlerSQLHelper.query(curPage, PAGE_SIZE, sortType);
                 subscriber.onNext(beans);
                 subscriber.onCompleted();
             }
@@ -126,7 +134,13 @@ public class MainPresenter {
     }
 
     public void updateDataFromNet() {
-
+        if(crawl == null){
+            crawl =new Crawl(mContext,this);
+        }
+        if(mSQLHelper == null){
+            mSQLHelper = new CrawlerSQLHelper(mContext);
+        }
+        crawl.beginCrawl();
     }
 
 
@@ -136,4 +150,31 @@ public class MainPresenter {
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         mContext.startActivity(intent);
     }
+
+    @Override
+    public void crawlProgress(int total, final int curIndex, int failedCount, final List<PlayListBean> playListBeens) {
+        if(curIndex < total - 1){
+            String msg = "共有" + total + "个歌单,当前获取第" + (curIndex + 1) + "个，失败" + failedCount + "个";
+            mView.showProgressDialog(msg);
+
+        }else{
+            Observable.create(new Observable.OnSubscribe<Boolean>() {
+                @Override
+                public void call(Subscriber<? super Boolean> subscriber) {
+                    subscriber.onNext(mSQLHelper.insert(playListBeens));
+                }
+            }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Action1<Boolean>() {
+                @Override
+                public void call(Boolean success) {
+                    if(success){
+                        refresh();
+                    }else{
+                        LogUtils.d("landon","insert is failed");
+                    }
+                    mView.hideProgressDialog();
+                }
+            });
+        }
+    }
+
 }

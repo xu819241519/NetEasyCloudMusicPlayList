@@ -68,6 +68,47 @@ public class HTMLParser {
     }
 
     public static PlayListBean getPlayListBean(String html){
+        if (html != null && !"".equals(html)) {
+            PlayListBean bean = new PlayListBean();
+            Document document = Jsoup.parse(html);
+            //设置收藏数
+            Elements elements = document.select(".u-btni-fav");
+            if (elements != null && elements.size() > 0) {
+                String collectCount = elements.first().attr("data-count");
+                if (collectCount != null && !"".equals(collectCount)) {
+                    bean.setCollectCount(Integer.parseInt(collectCount));
+                }
+            }
+            //设置歌名
+            elements = document.select(".f-ff2.f-brk");
+            if(elements != null && elements.size() > 0){
+                bean.setName(elements.first().text());
+            }
+            //设置url链接和id
+            elements =document.select("#content-operation");
+            if(elements != null && elements.size() > 0){
+                String id = elements.first().attr("data-rid");
+                bean.setId(Integer.parseInt(id));
+                bean.setUrl("http://music.163.com/playlist?id=" + id);
+            }
+            //设置图片
+            elements = document.select(".j-img");
+            if(elements != null && elements.size() > 0 ){
+                bean.setImage(elements.first().attr("data-src"));
+            }
+            //设置作者
+            elements =document.select(".s-fc7");
+            if(elements != null && elements.size() > 0) {
+                bean.setAuthor(elements.first().text());
+            }
+
+            //设置播放次数
+            elements =document.select("#play-count");
+            if(elements !=null && elements.size() > 0){
+                bean.setPlayCount(Integer.parseInt(elements.first().text()));
+            }
+            return bean;
+        }
         return null;
     }
 
