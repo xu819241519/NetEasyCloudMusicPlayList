@@ -11,10 +11,14 @@ import com.landon.neteasycloudmusicplaylist.activity.CrawlProgressListener;
 import com.landon.neteasycloudmusicplaylist.bean.PlayListBean;
 import com.landon.neteasycloudmusicplaylist.constant.Constant;
 import com.landon.neteasycloudmusicplaylist.parser.HTMLParser;
+import com.landon.neteasycloudmusicplaylist.presenter.MainPresenter;
+import com.landon.neteasycloudmusicplaylist.presenter.OnRequestListener;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+
+import rx.Observable;
 
 /**
  * 爬虫开始类
@@ -54,6 +58,8 @@ public class Crawl {
     private static final String UPDATE_ALL_TAG = "update_all";
 
     private static final String UPDATE_PARTLY_TAG = "update_partly";
+
+    private OnRequestListener mRequestListener;
 
     //计算页数的handler
     private static class crawlHandler extends Handler {
@@ -127,10 +133,14 @@ public class Crawl {
                         break;
 
                     case CRAWL_PLAYLIST_PART:
+                        crawl.curPlayList ++;
                         if (result.getStatus() == NetResult.STATUS_SUCCESS) {
                             PlayListBean bean = HTMLParser.getPlayListBean(result.getMsg());
-                            if (bean != null) {
+                            if (bean != null && crawl.mRequestListener != null) {
                                 crawl.playListData.add(bean);
+                            }
+                            if(crawl.curPlayList == crawl.totalPage){
+                                crawl.mRequestListener.update(crawl.playListData);
                             }
                             LogUtils.d("landon", "crawl_playlist");
 //                            LogUtils.d("xu", "抓取第" + crawl.curPlayList + "个歌单，共" + crawl.totalPlayList + "个歌单");
@@ -141,6 +151,7 @@ public class Crawl {
 ////                                }
 //                            }
                         } else {
+                            crawl.failedPlayList++;
                             LogUtils.d("landon", "获取第" + (crawl.curPlayList) + "个歌单错误：" + result.getMsg());
                         }
                         break;
@@ -167,6 +178,10 @@ public class Crawl {
         NetRequest netRequest = NetRequest.getInstance(context);
         Message msg = cHandler.obtainMessage(GET_PAGE_COUNT);
         netRequest.request(Constant.getURL(0), msg, Request.Priority.HIGH, UPDATE_ALL_TAG);
+        initParams();
+    }
+
+    private void initParams(){
         playListData = new ArrayList<>();
         mPlayListUrls = new ArrayList<>();
         curPage = 0;
@@ -189,6 +204,19 @@ public class Crawl {
             NetRequest netRequest = NetRequest.getInstance(context);
             Message message = cHandler.obtainMessage(CRAWL_PLAYLIST_ALL);
             netRequest.request(url, message, Request.Priority.NORMAL, UPDATE_ALL_TAG);
+        }
+    }
+
+    public void crawlPlayList(List<PlayListBean> beans, OnRequestListener listener){
+        mRequestListener = listener;
+        if(beans !=null && beans.size() > 0){
+            initParams();
+            totalPage = beans.size();
+            NetRequest netRequest = NetRequest.getInstance(context);
+            for(PlayListBean bean : beans){
+                Message message = cHandler.obtainMessage(CRAWL_PLAYLIST_PART);
+                netRequest.request(bean.getUrl(),message, Request.Priority.LOW, UPDATE_PARTLY_TAG);
+            }
         }
     }
 }

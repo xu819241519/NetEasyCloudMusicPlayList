@@ -86,7 +86,7 @@ public class CrawlerSQLHelper extends SQLiteOpenHelper {
      * @param bean 歌单bean
      * @return 成功插入返回true
      */
-    public boolean insert(PlayListBean bean) {
+    public synchronized boolean insert(PlayListBean bean) {
         LogUtils.d("CrawlerSQLHelper","before insert");
         if(Constant.existDBFile) {
             LogUtils.d("CrawlerSQLHelper","insert");

@@ -22,6 +22,7 @@ import com.landon.neteasycloudmusicplaylist.net.Crawl;
 import java.util.List;
 
 import rx.Observable;
+import rx.Observer;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
@@ -31,7 +32,7 @@ import rx.schedulers.Schedulers;
  * Created by landon on 2017/1/5.
  */
 
-public class MainPresenter implements CrawlProgressListener {
+public class MainPresenter implements CrawlProgressListener,OnRequestListener {
 
     //当前第几页
     private int curPage = 0;
@@ -55,6 +56,7 @@ public class MainPresenter implements CrawlProgressListener {
     public MainPresenter(Context context, IView view) {
         this.mView = view;
         this.mContext = context;
+        mSQLHelper = new CrawlerSQLHelper(mContext);
     }
 
 
@@ -98,9 +100,14 @@ public class MainPresenter implements CrawlProgressListener {
                             public void onNext(List<PlayListBean> playListBeen) {
                                 if (mView != null) {
                                     mView.addList(playListBeen);
+                                    if (crawl == null) {
+                                        crawl = new Crawl(mContext, MainPresenter.this);
+                                    }
+                                    crawl.crawlPlayList(playListBeen, MainPresenter.this);
                                 }
                             }
-                        });
+                        }
+                );
     }
 
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -134,10 +141,10 @@ public class MainPresenter implements CrawlProgressListener {
     }
 
     public void updateDataFromNet() {
-        if(crawl == null){
-            crawl =new Crawl(mContext,this);
+        if (crawl == null) {
+            crawl = new Crawl(mContext, this);
         }
-        if(mSQLHelper == null){
+        if (mSQLHelper == null) {
             mSQLHelper = new CrawlerSQLHelper(mContext);
         }
         crawl.beginCrawl();
@@ -153,11 +160,11 @@ public class MainPresenter implements CrawlProgressListener {
 
     @Override
     public void crawlProgress(int total, final int curIndex, int failedCount, final List<PlayListBean> playListBeens) {
-        if(curIndex < total - 1){
+        if (curIndex < total - 1) {
             String msg = "共有" + total + "个歌单,当前获取第" + (curIndex + 1) + "个，失败" + failedCount + "个";
             mView.showProgressDialog(msg);
 
-        }else{
+        } else {
             Observable.create(new Observable.OnSubscribe<Boolean>() {
                 @Override
                 public void call(Subscriber<? super Boolean> subscriber) {
@@ -166,15 +173,53 @@ public class MainPresenter implements CrawlProgressListener {
             }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Action1<Boolean>() {
                 @Override
                 public void call(Boolean success) {
-                    if(success){
+                    if (success) {
                         refresh();
-                    }else{
-                        LogUtils.d("landon","insert is failed");
+                    } else {
+                        LogUtils.d("landon", "insert is failed");
                     }
                     mView.hideProgressDialog();
                 }
             });
         }
     }
+
+    @Override
+    public void update(final List<PlayListBean> beans) {
+
+        LogUtils.d("update","update beans");
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                mSQLHelper.insert(beans);
+            }
+        }).start();
+
+//        LogUtils.d("update","bean is " + bean.getId());
+//        Observable.create(new Observable.OnSubscribe<Boolean>() {
+//            @Override
+//            public void call(Subscriber<? super Boolean> subscriber) {
+//                mSQLHelper.insert(bean);
+//                subscriber.onNext(true);
+//            }
+//        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Observer<Boolean>() {
+//            @Override
+//            public void onCompleted() {
+//
+//            }
+//
+//            @Override
+//            public void onError(Throwable e) {
+//
+//            }
+//
+//            @Override
+//            public void onNext(Boolean aBoolean) {
+//
+//            }
+//
+//        });
+    }
+
 
 }
